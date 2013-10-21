@@ -19,16 +19,16 @@
 
     <Button
         android:id="@+id/loadSecretButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView1"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="101dp"
+        android:layout_margin="29dp"
         android:text="@string/loadSecret" />
 
     <TextView
         android:id="@+id/resultTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/textView1"
         android:layout_below="@+id/textView1"
@@ -36,12 +36,12 @@
 
     <Button
         android:id="@+id/scanToRegisterButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/loadSecretButton"
-        android:layout_alignRight="@+id/loadSecretButton"
         android:layout_below="@+id/loadSecretButton"
-        android:layout_marginTop="30dp"
-        android:text="@string/register" />
+        android:text="@string/register"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="29dp"
+	 />
 
 </RelativeLayout>

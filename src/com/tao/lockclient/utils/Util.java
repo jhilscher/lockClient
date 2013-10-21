@@ -9,6 +9,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
@@ -21,7 +23,12 @@ import android.util.Log;
 public class Util {
 
 	public static final String FILENAME_ID = "clientidkey";
-	public static final String FILENAME_X1 = "x1key";
+	public static final String FILENAME_X1 = "x1key.kstore";
+	
+	public static final String PREFS = "lockPrefs";
+	public static final String PREFS_KEY_LOGGEDIN = "loggedIn";
+	public static final String PREFS_KEY_REGISTERED = "registered";
+	
 	
 	public static boolean saveToFile(String content, String filename, Context context) {
 		
@@ -32,10 +39,10 @@ public class Util {
 			fos.close();
 			return true;
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			Log.e("Error: ", e.getMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block 
+			Log.e("Error: ", e.getMessage());
 			e.printStackTrace();
 		}
 		return false;

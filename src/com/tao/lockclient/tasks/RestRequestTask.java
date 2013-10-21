@@ -1,4 +1,4 @@
-package com.tao.lockclient.tasks;
+	package com.tao.lockclient.tasks;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,9 +23,16 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONObject;
 
 import com.google.gson.GsonBuilder;
+import com.tao.lockclient.utils.SharedPrefsUtil;
+import com.tao.lockclient.utils.Util;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * 
@@ -33,8 +40,34 @@ import android.util.Log;
  * http://stackoverflow.com/questions/3505930/make-an-http-request-with-android
  * for: REGISTRATION!!!
  */
-public class RestRequestTask extends AsyncTask<String, String, String>{
+public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 
+	private Context context;
+	
+	private ProgressDialog pdia;
+	
+	private String loadMsg;
+	
+	private String successMsg;
+	
+	private String failMsg;
+	
+	public TaskType type;
+	
+	public enum TaskType {
+		REGISTER, LOGIN
+	}
+	
+	public RestRequestTask(Context context, Activity activity, String loadMsg, String successMsg, String failMsg, TaskType type) {
+
+		this.context = context;
+		this.pdia = new ProgressDialog(activity);
+		this.loadMsg = loadMsg;
+		this.successMsg = successMsg;
+		this.failMsg = failMsg;
+		this.type = type;
+	}
+	
 	/**
 	 * HTTP GET request.
 	 * Joerg Hilscher.
@@ -43,12 +76,16 @@ public class RestRequestTask extends AsyncTask<String, String, String>{
 	 * args[2]: JSON-Value 2
 	 */
     @Override
-    protected String doInBackground(String... args) {
+    protected Boolean doInBackground(String... args) {
     	
     	// SSL
     	//http://stackoverflow.com/questions/2603691/android-httpclient-and-https
     	
     	// TODO: Alternativer weg: http://developer.android.com/training/articles/security-ssl.html 
+    	
+    	Log.i("Task execution: ", "started");
+    	
+    	Boolean result = false;
     	
     	SchemeRegistry schemeRegistry = new SchemeRegistry();
     	schemeRegistry.register(new Scheme("https", 
@@ -98,12 +135,16 @@ public class RestRequestTask extends AsyncTask<String, String, String>{
             
             Log.i("Statuscode", "Code: " + statusLine.getStatusCode());
             
-            // when 201 created
-            if(statusLine.getStatusCode() == HttpStatus.SC_CREATED){
+            // when 201 created OR 200 ok
+            if(statusLine.getStatusCode() == HttpStatus.SC_CREATED
+            		|| statusLine.getStatusCode() == HttpStatus.SC_OK){
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 response.getEntity().writeTo(out);
                 out.close();
                 responseString = out.toString();
+                
+                result = true;
+                
             } else{
                 //Closes the connection.
                 response.getEntity().getContent().close();
@@ -119,16 +160,49 @@ public class RestRequestTask extends AsyncTask<String, String, String>{
         
         Log.i("Response: ", "string: " + responseString);
         
-        return responseString;
+        return result;
         
     }
     
-    
+    @Override
+    protected void onPreExecute() {
+    	super.onPreExecute();
+    	
+    	Log.i("RequestTask", "onPreExecute fired");
+    	
+    	if (context == null)
+    		return;
+    	
+    	//pdia = ProgressDialog.show(context, "Sending ...", "Token is send to server.", true, false);
+        pdia.setMessage(loadMsg);
+        pdia.show();   
+    }
 
     @Override
-    protected void onPostExecute(String result) {
+    protected void onPostExecute(Boolean result) {
         super.onPostExecute(result);
-        //Do anything with response..
         
+        Log.i("RequestTask", "onPostExecute fired");
+        
+        if (pdia == null)
+        	return;
+
+        pdia.dismiss();
+        
+        if (result) {
+        
+	        if (type == TaskType.LOGIN)
+	        	SharedPrefsUtil.setSharedPrefs(Util.PREFS_KEY_LOGGEDIN, true, context);
+	        else if (type == TaskType.REGISTER)
+	        	SharedPrefsUtil.setSharedPrefs(Util.PREFS_KEY_REGISTERED, true, context);
+	        
+	        Toast.makeText(context, this.successMsg, Toast.LENGTH_SHORT).show();
+        
+        } else {
+        	
+        	Toast.makeText(context, this.failMsg, Toast.LENGTH_SHORT).show();
+        	
+        }
+
     }
 }

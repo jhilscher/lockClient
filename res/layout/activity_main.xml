@@ -15,34 +15,24 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="64dp"
-        android:text="@string/hello_world" />
-
-    <Button
-        android:id="@+id/callRest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/scanButton"
-        android:layout_centerHorizontal="true"
-        android:width="240dp"
-        android:text="@string/send" />
+        android:text="@string/welcome" />
 
     <Button
         android:id="@+id/registerButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/scanButton"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="86dp"
         android:text="@string/register"
-        android:width="240dp" />
+        android:layout_margin="29dp" />
 
     <Button
         android:id="@+id/scanButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/registerButton"
-        android:layout_alignLeft="@+id/callRest"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="29dp"
         android:text="@string/scan"
-        android:width="240dp" />
+ />
 
 </RelativeLayout>
