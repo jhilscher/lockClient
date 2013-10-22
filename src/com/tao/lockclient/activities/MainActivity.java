@@ -1,13 +1,7 @@
 package com.tao.lockclient.activities;
 
-import java.net.ResponseCache;
-import java.util.concurrent.ExecutionException;
-
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,12 +9,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import com.tao.lockclient.R;
 import com.tao.lockclient.tasks.RestRequestTask;
-import com.tao.lockclient.utils.Util;
 import com.tao.lockclient.utils.SharedPrefsUtil;
+import com.tao.lockclient.utils.Util;
 
 /**
  * 
@@ -42,21 +37,15 @@ public class MainActivity extends Activity {
 	
 	private String scanContents;
 	
+	private CheckBox checkBoxRegistered;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		boolean appIsRegistered = SharedPrefsUtil.getFromSharedPrefs(Util.PREFS_KEY_REGISTERED, this);
-		boolean appIsLoggedIn = SharedPrefsUtil.getFromSharedPrefs(Util.PREFS_KEY_LOGGEDIN, this);
-		
-		// Click on the scan button.
+		// Scan button for login
 		scanButton = (Button) findViewById(R.id.scanButton);
-		
-		// if registered, set color of button to green
-		if(appIsLoggedIn) {
-			scanButton.getBackground().setColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.MULTIPLY);
-		}
 		
 		scanButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -72,13 +61,8 @@ public class MainActivity extends Activity {
 			}
 		});
 		
-		// click register button
+		// register button
 		registerButton = (Button) findViewById(R.id.registerButton);
-		
-		// if registered, set color of button to green
-		if(appIsRegistered) {
-			registerButton.setBackgroundColor(getResources().getColor(R.color.green));
-		}
 		
 		// OnClickListener
 		registerButton.setOnClickListener(new View.OnClickListener() {
@@ -89,6 +73,12 @@ public class MainActivity extends Activity {
 					}	
 			});			
 
+		// checkbox
+		checkBoxRegistered = (CheckBox) findViewById(R.id.checkBoxRegistered);
+		
+		
+		checkIfRegistered();
+		
 	}
 	
 	// resuming
@@ -96,27 +86,29 @@ public class MainActivity extends Activity {
 	public void onResume() {
 	    super.onResume();  // Always call the superclass method first
 
-		boolean appIsRegistered = SharedPrefsUtil.getFromSharedPrefs(Util.PREFS_KEY_REGISTERED, this);
-		boolean appIsLoggedIn = SharedPrefsUtil.getFromSharedPrefs(Util.PREFS_KEY_LOGGEDIN, this);
-
-		Log.i("id registered? : ", "Bool: " + appIsRegistered);
-		Log.i("id loggedIn? : ", "Bool: " + appIsLoggedIn);
-		
-	    if(appIsRegistered) {
-	    	registerButton.setBackgroundColor(getResources().getColor(R.color.green));
-	    	registerButton.setText("App is registered!");
-		}
+	    // check
+	    checkIfRegistered();
 	    
-		if(appIsLoggedIn) {
-			scanButton.setBackgroundColor(getResources().getColor(R.color.green));
-			scanButton.setText("You have logged in");
-		}
-		
-		if (this.scanContents != null) {
-			loginToServer();
-		}
 	}
 	
+	/**
+	 * Checks if the app is registered and sets info.
+	 */
+	private void checkIfRegistered() {
+		boolean appIsRegistered = SharedPrefsUtil.getFromSharedPrefs(Util.PREFS_KEY_REGISTERED, this);
+		
+		// if registered, set color of button to green
+		if(appIsRegistered) {
+			checkBoxRegistered.setTextColor(getResources().getColor(R.color.green));
+			checkBoxRegistered.setChecked(true);
+			checkBoxRegistered.setText(getResources().getString(R.string.checkBoxRegistered));
+		} else {
+			checkBoxRegistered.setTextColor(getResources().getColor(R.color.red));
+			checkBoxRegistered.setChecked(false);
+			checkBoxRegistered.setText(getResources().getString(R.string.checkBoxNotRegistered));
+		}
+		
+	}
 	
 	/**
 	 * Handles the result from the qr-code-scanner intend.
@@ -185,6 +177,8 @@ public class MainActivity extends Activity {
 		    	  // QR-Code Content 
 		         this.scanContents = intent.getStringExtra("SCAN_RESULT");
 		         String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+		         
+		         loginToServer();
 
 		      } else if (resultCode == RESULT_CANCELED) {
 		    	  showMessage("Scan NOT successful!");
