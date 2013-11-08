@@ -5,17 +5,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 import android.content.Context;
 import android.util.Log;
@@ -29,6 +29,7 @@ public class Util {
 	public static final String PREFS_KEY_LOGGEDIN = "loggedIn";
 	public static final String PREFS_KEY_REGISTERED = "registered";
 	
+	public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 	
 	public static boolean saveToFile(String content, String filename, Context context) {
 		
@@ -142,10 +143,30 @@ public class Util {
      */
     public static byte[] xor(byte[] a, byte[] b)
     {
-    	final byte[] output = new byte[Math.min(a.length, b.length)];
+    	int length = Math.min(a.length, b.length);
+    	final byte[] output = new byte[length];
     	
-        for(int i = 0; i < a.length && i < b.length; i++)
+        for(int i = 0; i < length; i++)
         	output[i] = (byte) (a[i] ^ b[i]);
         return output;
+    }
+    
+	/**
+     * Taken From:
+     * https://crackstation.net/hashing-security.htm
+     * Computes the PBKDF2 hash of a password.
+     *
+     * @param   password    the password to hash.
+     * @param   salt        the salt
+     * @param   iterations  the iteration count (slowness factor)
+     * @param   bytes       the length of the hash to compute in bytes
+     * @return              the PBDKF2 hash of the password
+     */
+    public static String pbkdf2(char[] password, byte[] salt, int iterations, int bytes)
+        throws NoSuchAlgorithmException, InvalidKeySpecException
+    {
+        PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, bytes * 8);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+        return toHex(skf.generateSecret(spec).getEncoded());
     }
 }

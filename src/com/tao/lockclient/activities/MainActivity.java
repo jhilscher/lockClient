@@ -1,5 +1,8 @@
 package com.tao.lockclient.activities;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -11,7 +14,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
-
 import com.tao.lockclient.R;
 import com.tao.lockclient.tasks.RestRequestTask;
 import com.tao.lockclient.utils.SharedPrefsUtil;
@@ -129,6 +131,9 @@ public class MainActivity extends Activity {
 		         
 		         // remove null values from response string 
 		         contents = contents.replaceAll("\u0000", "");
+		         contents = contents.replaceAll("\"", "");
+		         
+		         Log.i("contents: ", contents);
 		         
 		         if(contents.split("#").length != 2) {
 		        	 showMessage("Wrong QR-Code!");
@@ -144,12 +149,23 @@ public class MainActivity extends Activity {
 		         
 		         Log.i("x1: ", x1);
 		         Log.i("alpha: ", alpha);
+		         Log.i("alpha-length: ", "" + alpha.length());
 		         
 		         // decrypt, to get one time token r1
-		         String r1 = Util.toHex(Util.xor(Util.fromHex(x1), Util.fromHex(alpha)));
+		         String t1 = Util.toHex(Util.xor(Util.fromHex(x1), Util.fromHex(alpha)));
 		         x1 = null;
 		         
-		         //TODO: hash r1 with timestamp
+		         Log.i("t1: ", t1);
+		         byte[] ts = timestamp.getBytes();
+		         
+		         Log.i("timestampbytes: l " + ts.length,  "");
+		         
+		        try {
+					
+		        	String r1 =  Util.pbkdf2(t1.toUpperCase().toCharArray(), timestamp.getBytes(), 1000, 64);
+				
+		        	Log.i("r1: ", r1);
+		        	Log.i("timestamp: ", timestamp);
 		         
 		        AsyncTask<String, String, Boolean> task = new RestRequestTask(
 		        		this, 
@@ -162,6 +178,14 @@ public class MainActivity extends Activity {
 								ID,
 								r1);
 
+		        } catch (NoSuchAlgorithmException e) {
+					e.printStackTrace();
+					return false;
+				} catch (InvalidKeySpecException e) {
+					e.printStackTrace();
+					return false;
+				}
+		        
 		        return true;		   
 		}
 
