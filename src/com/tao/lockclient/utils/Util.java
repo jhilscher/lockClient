@@ -7,8 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
@@ -48,11 +51,50 @@ public class Util {
 		}
 		return false;
 	}
-	
+		
+     
+     public static PrivateKey getKeyFromFile(String filename, Context context) {
+ 		FileInputStream fis = null;
+ 		
+ 		File file = context.getFileStreamPath(filename);
+ 		
+ 		
+ 		if(!file.exists()) {
+ 			return null;
+ 		}
+ 		
+ 		// read File
+ 		try {
+ 			fis = context.openFileInput(filename);
+ 			
+ 			 ObjectInputStream inputStream = null;
+
+ 		     // Encrypt the string using the public key
+ 		     inputStream = new ObjectInputStream(fis);
+ 		     final PrivateKey privateKey = (PrivateKey) inputStream.readObject();
+ 			
+ 		    fis.close();
+ 		    
+ 		    return privateKey;
+
+ 		} catch (FileNotFoundException e) {
+ 			Log.e("Error: ", e.getMessage());
+ 			e.printStackTrace();
+ 		} catch (IOException e) {
+ 			Log.e("Error: ", e.getMessage());
+ 			e.printStackTrace();
+ 		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+ 		return null;
+ 	} 
+    
 	public static String readFromFile(String filename, Context context) {
 		FileInputStream fis = null;
 		
 		File file = context.getFileStreamPath(filename);
+		
+		
 		if(!file.exists()) {
 			return null;
 		}
@@ -62,6 +104,8 @@ public class Util {
 			fis = context.openFileInput(filename);
 			
 			InputStreamReader inputStreamReader = new InputStreamReader(fis);
+	
+			
 			
 		    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 		    

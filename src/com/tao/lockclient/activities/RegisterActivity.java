@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 
 import com.tao.lockclient.R;
 import com.tao.lockclient.tasks.RestRequestTask;
+import com.tao.lockclient.utils.EncryptionUtil;
 import com.tao.lockclient.utils.SharedPrefsUtil;
 import com.tao.lockclient.utils.Util;
 
@@ -84,29 +86,34 @@ public class RegisterActivity extends Activity {
 		         contents = contents.replaceAll("\u0000", "");
 		         
 		         Util.saveToFile(contents, Util.FILENAME_ID, this);
-		         		         
-		         try {
-		        	String x1 = Util.generateKey(); 
 
-		        	AsyncTask<String, String, Boolean> task = new RestRequestTask(this, 
-		        			RegisterActivity.this, 
-		        			"Trying to register ...",
-		        			"Registration successfull",
-		        			"Registration failed.",
-		        			RestRequestTask.TaskType.REGISTER);
-		        	
-		        	task.execute("https://lockd059130trial.hanatrial.ondemand.com/lock/api/service/register",
-							contents,
-							x1);
-					
-					Util.saveToFile(x1, Util.FILENAME_X1, this);
-					
-					
-				} catch (NoSuchAlgorithmException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+	        	// FIXME: test 
+	        	// changes HERE
+	        	//String x1 = Util.generateKey(); 
+	        	//byte[] publicKey = EncryptionUtil.generateKey(this);
+	        	String x1 = EncryptionUtil.generateKey(this); 
 		         
+		         
+	        	//Log.i("public key", "length: " + publicKey.length);
+	        	
+	        	//String x1 = Util.toHex(publicKey);
+	        	
+	        	Log.i("public key", x1);
+	        	
+	        	AsyncTask<String, String, Boolean> task = new RestRequestTask(this, 
+	        			RegisterActivity.this, 
+	        			"Trying to register ...",
+	        			"Registration successfull",
+	        			"Registration failed.",
+	        			RestRequestTask.TaskType.REGISTER);
+	        	
+	        	task.execute("https://lockd059130trial.hanatrial.ondemand.com/lock/api/service/register",
+						contents,
+						x1);
+				
+				//Util.saveToFile(x1, Util.FILENAME_X1, this);
+					
+
 		         String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 		         // Handle successful scan
 		         

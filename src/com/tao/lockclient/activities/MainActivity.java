@@ -2,6 +2,7 @@ package com.tao.lockclient.activities;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -14,8 +15,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
+
 import com.tao.lockclient.R;
 import com.tao.lockclient.tasks.RestRequestTask;
+import com.tao.lockclient.utils.EncryptionUtil;
 import com.tao.lockclient.utils.SharedPrefsUtil;
 import com.tao.lockclient.utils.Util;
 
@@ -144,16 +147,18 @@ public class MainActivity extends Activity {
 		         String alpha = contents.split("#")[0];
 		         String timestamp = contents.split("#")[1];
 		         
-		         String x1 = Util.readFromFile(Util.FILENAME_X1, this);
+		         //String x1 = Util.readFromFile(Util.FILENAME_X1, this);
 		         String ID = Util.readFromFile(Util.FILENAME_ID, this);
 		         
-		         Log.i("x1: ", x1);
+		         //Log.i("x1: ", x1);
 		         Log.i("alpha: ", alpha);
 		         Log.i("alpha-length: ", "" + alpha.length());
 		         
 		         // decrypt, to get one time token r1
-		         String t1 = Util.toHex(Util.xor(Util.fromHex(x1), Util.fromHex(alpha)));
-		         x1 = null;
+		         //String t1 = Util.toHex(Util.xor(Util.fromHex(x1), Util.fromHex(alpha)));
+		         String t1 = EncryptionUtil.decrypt(Util.fromHex(alpha), this);
+		         
+		         //x1 = null;
 		         
 		         Log.i("t1: ", t1);
 		         byte[] ts = timestamp.getBytes();
