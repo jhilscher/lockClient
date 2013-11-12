@@ -11,7 +11,6 @@ import java.io.ObjectInputStream;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
@@ -23,6 +22,11 @@ import javax.crypto.spec.PBEKeySpec;
 import android.content.Context;
 import android.util.Log;
 
+/**
+ * Utility Methods. 
+ * @author Joerg Hilscher
+ *
+ */
 public class Util {
 
 	public static final String FILENAME_ID = "clientidkey";
@@ -34,6 +38,13 @@ public class Util {
 	
 	public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 	
+	/**
+	 * Saves a file to internal storage.
+	 * @param content	Content of the file as string.
+	 * @param filename	Filename.
+	 * @param context	Android Context.
+	 * @return	Boolean if successful.
+	 */
 	public static boolean saveToFile(String content, String filename, Context context) {
 		
 		FileOutputStream fos;
@@ -52,7 +63,12 @@ public class Util {
 		return false;
 	}
 		
-     
+     /**
+      * Gets a stored privete key.
+      * @param filename	filename of the key.
+      * @param context	Android context.
+      * @return	The key.
+      */
      public static PrivateKey getKeyFromFile(String filename, Context context) {
  		FileInputStream fis = null;
  		
@@ -69,7 +85,6 @@ public class Util {
  			
  			 ObjectInputStream inputStream = null;
 
- 		     // Encrypt the string using the public key
  		     inputStream = new ObjectInputStream(fis);
  		     final PrivateKey privateKey = (PrivateKey) inputStream.readObject();
  			
@@ -84,11 +99,18 @@ public class Util {
  			Log.e("Error: ", e.getMessage());
  			e.printStackTrace();
  		} catch (ClassNotFoundException e) {
+ 			Log.e("Error: ", e.getMessage());
 			e.printStackTrace();
 		}
  		return null;
  	} 
     
+     /**
+      * Get the content of a file.
+      * @param filename	filename.
+      * @param context	Android context.
+      * @return	Content of the file as string.
+      */
 	public static String readFromFile(String filename, Context context) {
 		FileInputStream fis = null;
 		
@@ -129,6 +151,7 @@ public class Util {
 	}
 	
 	/**
+	 * After recommendations from android-developers
 	 * http://android-developers.blogspot.de/2013/02/using-cryptography-to-store-credentials.html
 	 */
 	public static String generateKey() throws NoSuchAlgorithmException {
@@ -136,6 +159,7 @@ public class Util {
 		final int outputKeyLength = 256;
 		
 	    SecureRandom secureRandom = new SecureRandom();
+	    
 	    // Do *not* seed secureRandom! Automatically seeded from system entropy.
 	    KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
 	    keyGenerator.init(outputKeyLength, secureRandom);
@@ -180,10 +204,11 @@ public class Util {
     }
     
     /**
-     * 
+     * XOR 2 byte arrays.
+     * Length will be the length if the shorter array.
      * @param a
      * @param b
-     * @return
+     * @return	xored byte array.
      */
     public static byte[] xor(byte[] a, byte[] b)
     {
@@ -196,6 +221,8 @@ public class Util {
     }
     
 	/**
+	 * Hash-Algorithm: pbkdf2
+	 * 
      * Taken From:
      * https://crackstation.net/hashing-security.htm
      * Computes the PBKDF2 hash of a password.

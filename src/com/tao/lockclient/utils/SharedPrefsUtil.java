@@ -4,10 +4,16 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
+/**
+ * 
+ * @author Joerg Hilscher
+ * 
+ * Save and Get SharedPreferences.
+ */
 public class SharedPrefsUtil {
 
 	/**
-	 * Inserts a key, value paar into SharedPrefs.
+	 * Inserts a key, value pare into SharedPrefs.
 	 * @param key 	String key.
 	 * @param value	Boolean value.
 	 */

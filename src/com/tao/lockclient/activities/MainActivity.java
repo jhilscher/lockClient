@@ -18,7 +18,7 @@ import android.widget.Toast;
 
 import com.tao.lockclient.R;
 import com.tao.lockclient.tasks.RestRequestTask;
-import com.tao.lockclient.utils.EncryptionUtil;
+import com.tao.lockclient.utils.RSAUtil;
 import com.tao.lockclient.utils.SharedPrefsUtil;
 import com.tao.lockclient.utils.Util;
 
@@ -38,7 +38,6 @@ public class MainActivity extends Activity {
 	
 	private Button registerButton;
 	
-	private RestRequestTask requestTask;
 	
 	private String scanContents;
 	
@@ -116,12 +115,11 @@ public class MainActivity extends Activity {
 	}
 	
 	/**
-	 * Handles the result from the qr-code-scanner intend.
-	 * --> AUTH
+	 * 
+	 * @return Boolean if successful.
 	 */
 	public Boolean loginToServer() {
 
-		    	 
 		    	  // QR-Code Content 
 		         String contents = this.scanContents;
 		         
@@ -155,33 +153,30 @@ public class MainActivity extends Activity {
 		         Log.i("alpha-length: ", "" + alpha.length());
 		         
 		         // decrypt, to get one time token r1
-		         //String t1 = Util.toHex(Util.xor(Util.fromHex(x1), Util.fromHex(alpha)));
-		         String t1 = EncryptionUtil.decrypt(Util.fromHex(alpha), this);
-		         
-		         //x1 = null;
-		         
+		         String t1 = RSAUtil.decrypt(Util.fromHex(alpha), this);
+		         		         
 		         Log.i("t1: ", t1);
+		         
 		         byte[] ts = timestamp.getBytes();
 		         
 		         Log.i("timestampbytes: l " + ts.length,  "");
 		         
 		        try {
 					
+		        	// hash the result, with the timestamp as salt
 		        	String r1 =  Util.pbkdf2(t1.toUpperCase().toCharArray(), timestamp.getBytes(), 1000, 64);
 				
 		        	Log.i("r1: ", r1);
 		        	Log.i("timestamp: ", timestamp);
 		         
-		        AsyncTask<String, String, Boolean> task = new RestRequestTask(
-		        		this, 
-		        		MainActivity.this,
-		        		"Trying to log in ...",
-		        		"Log in successful.",
-		        		"Failed to log in.",
-		        		RestRequestTask.TaskType.LOGIN)
-		        .execute("https://lockd059130trial.hanatrial.ondemand.com/lock/api/service/auth",
-								ID,
-								r1);
+			        AsyncTask<String, String, Boolean> task = new RestRequestTask(
+			        		this, 
+			        		MainActivity.this,
+			        		"Trying to log in ...",
+			        		"Log in successful.",
+			        		"Failed to log in.",
+			        		RestRequestTask.TaskType.LOGIN)
+			        .execute(URL, ID, r1);
 
 		        } catch (NoSuchAlgorithmException e) {
 					e.printStackTrace();

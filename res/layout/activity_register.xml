@@ -17,15 +17,6 @@
         android:layout_marginTop="67dp"
         android:text="@string/register" />
 
-    <Button
-        android:id="@+id/loadSecretButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="29dp"
-        android:text="@string/loadSecret" />
-
     <TextView
         android:id="@+id/resultTextView"
         android:layout_width="match_parent"
@@ -38,10 +29,9 @@
         android:id="@+id/scanToRegisterButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/loadSecretButton"
-        android:text="@string/register"
+        android:layout_below="@+id/textView1"
         android:layout_centerHorizontal="true"
         android:layout_margin="29dp"
-	 />
+        android:text="@string/register" />
 
 </RelativeLayout>

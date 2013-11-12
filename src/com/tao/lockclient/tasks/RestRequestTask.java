@@ -10,7 +10,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
@@ -20,25 +19,23 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
-import org.json.JSONObject;
+
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.GsonBuilder;
 import com.tao.lockclient.utils.SharedPrefsUtil;
 import com.tao.lockclient.utils.Util;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.util.Log;
-import android.widget.Toast;
-
 /**
  * 
  * @author Joerg Hilscher.
  * http://stackoverflow.com/questions/3505930/make-an-http-request-with-android
- * for: REGISTRATION!!!
+ * for: REGISTRATION and AUTHENTIFICATION.
  */
 public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 
@@ -54,10 +51,24 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 	
 	public TaskType type;
 	
+	private final int SSL_PORT = 443;
+	
+	private final String JSON_X1 = "x1";
+	private final String JSON_IDKEY = "clientIdKey";
+	
 	public enum TaskType {
 		REGISTER, LOGIN
 	}
 	
+	/**
+	 * Constructor.
+	 * @param context		Android Context
+	 * @param activity		Launching Activity
+	 * @param loadMsg		Message while loading
+	 * @param successMsg	Message after success
+	 * @param failMsg		Message after failure
+	 * @param type			ENUM: Type of request: Login or Register
+	 */
 	public RestRequestTask(Context context, Activity activity, String loadMsg, String successMsg, String failMsg, TaskType type) {
 
 		this.context = context;
@@ -69,27 +80,25 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 	}
 	
 	/**
-	 * HTTP GET request.
-	 * Joerg Hilscher.
+	 * HTTPS POST request.
+	 * @author Joerg Hilscher.
 	 * args[0]: URL
 	 * args[1]: JSON-Value 1
 	 * args[2]: JSON-Value 2
+	 * 
+	 * @return Boolean if successful
 	 */
     @Override
     protected Boolean doInBackground(String... args) {
     	
-    	// SSL
-    	//http://stackoverflow.com/questions/2603691/android-httpclient-and-https
-    	
-    	// TODO: Alternativer weg: http://developer.android.com/training/articles/security-ssl.html 
-    	
+    	// SSL    	
     	Log.i("Task execution: ", "started");
     	
     	Boolean result = false;
     	
     	SchemeRegistry schemeRegistry = new SchemeRegistry();
     	schemeRegistry.register(new Scheme("https", 
-    	            SSLSocketFactory.getSocketFactory(), 443));
+    	            SSLSocketFactory.getSocketFactory(), SSL_PORT));
 
     	HttpParams params = new BasicHttpParams();
 
@@ -97,22 +106,18 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 
     	HttpClient httpclient = new DefaultHttpClient(mgr, params);
     	
-
-        //HttpClient httpclient = new DefaultHttpClient();
         HttpResponse response;
         String responseString = null;
+        
         try {
-            
-        	// HTTP GET
-        	//response = httpclient.execute(new HttpGet(uri[0]));
-            
+                        
         	if(args.length < 3)
         		throw new IllegalArgumentException("args needs 3 values!");
         	
         	// JSON
         	Map<String, String> comment = new HashMap<String, String>();    
-        	comment.put("x1", args[2]);
-            comment.put("clientIdKey", args[1]);
+        	comment.put(JSON_X1, args[2]);
+            comment.put(JSON_IDKEY, args[1]);
             String json = new GsonBuilder().create().toJson(comment, Map.class);
 
             //passes the results to a string builder/entity
@@ -122,13 +127,14 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
         	HttpPost post = new HttpPost(args[0]);
         	
         	// TODO: remove
-        	Log.i("Json POST: ", json);
+        	//Log.i("Json POST: ", json);
         	
         	// set Header
         	post.addHeader("Accept", "application/json");
         	post.addHeader("Content-Type", "application/json");
             post.setEntity(se);
         	
+            // get response
         	response = httpclient.execute(post);
         	
             StatusLine statusLine = response.getStatusLine();
@@ -173,11 +179,16 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
     	if (context == null)
     		return;
     	
-    	//pdia = ProgressDialog.show(context, "Sending ...", "Token is send to server.", true, false);
+    	// set Dialog while working.
         pdia.setMessage(loadMsg);
         pdia.show();   
     }
 
+
+    /**
+     * Method executed after doInBackgound.
+     * @param result	if doInBackground was successful.
+     */
     @Override
     protected void onPostExecute(Boolean result) {
         super.onPostExecute(result);
@@ -187,6 +198,7 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
         if (pdia == null)
         	return;
 
+        // remove Loading-Dialog.
         pdia.dismiss();
         
         if (result) {
@@ -199,6 +211,11 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 	        Toast.makeText(context, this.successMsg, Toast.LENGTH_SHORT).show();
         
         } else {
+        	
+	        if (type == TaskType.LOGIN)
+	        	SharedPrefsUtil.setSharedPrefs(Util.PREFS_KEY_LOGGEDIN, false, context);
+	        else if (type == TaskType.REGISTER)
+	        	SharedPrefsUtil.setSharedPrefs(Util.PREFS_KEY_REGISTERED, false, context);
         	
         	Toast.makeText(context, this.failMsg, Toast.LENGTH_SHORT).show();
         	
