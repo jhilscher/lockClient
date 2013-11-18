@@ -29,11 +29,11 @@ public class RSAUtil {
 
   public static final String ALGORITHM = "RSA";
   public static final String PRIVATE_KEY_FILE = "private.key";
-  public static final int KEY_SIZE = 1024;
+  public static final int KEY_SIZE = 2048; // Bits
   
 
   /**
-   * Generates RSA-Keys.
+   * Generates RSA-Key-Pair.
    * Saves private key.
    * Returns public key.
    * @param context Android Context
@@ -51,12 +51,15 @@ public class RSAUtil {
   		
   		// save private key to internal storage
 		FileOutputStream fos;
+		
 		try {
+			
 			fos = context.openFileOutput(PRIVATE_KEY_FILE, Context.MODE_PRIVATE);
 			ObjectOutputStream privateKeyOS = new ObjectOutputStream(fos);
 			privateKeyOS.writeObject(key.getPrivate());
 			privateKeyOS.close();
 			fos.close();
+			
 		} catch (FileNotFoundException e) {
 			Log.e("Error: ", e.getMessage());
 			e.printStackTrace();
@@ -65,11 +68,13 @@ public class RSAUtil {
 			e.printStackTrace();
 		}
 
+		// map public key to RSAPublicKey-Object
 		RSAPublicKey rsaPublicKey = (RSAPublicKey)KeyFactory.getInstance(ALGORITHM).generatePublic(new X509EncodedKeySpec(key.getPublic().getEncoded()));
 		
-		// encode as xml
+		// to encode as xml
 		StringBuilder sb = new StringBuilder();
 		
+		// TODO: remove -> should not log this
 		Log.i("Modulus Size: ", "" + rsaPublicKey.getModulus().toByteArray().length );
 		Log.i("Modulus Int: ", "" + rsaPublicKey.getModulus() );
 		
@@ -85,6 +90,7 @@ public class RSAUtil {
 		sb.append("<Exponent>"  + Base64.encodeToString(exponent, Base64.NO_WRAP) +  "</Exponent>");
 		sb.append("</RSAKeyValue>");
 		
+		// return as String
 		return sb.toString();
       
 	} catch (NoSuchAlgorithmException e1) {
@@ -118,40 +124,35 @@ public class RSAUtil {
 	  return result;
   }
 
-
-
   /**
    * Decrypts a RSA-encrypted text. 
    * @param text encrypted text
    * @param context Android Context
    * @return Hex encoded string. 
    */
-  public static String decrypt(byte[] text, Context context) {
+  public static String decrypt(byte[] cipherText, Context context) {
     
-		byte[] dectyptedText = null;
+		byte[] plainText = null;
 	  
 		try {
     	
-		  // get the key
+		  // get the private key from the key file
 		  PrivateKey key = Util.getKeyFromFile(PRIVATE_KEY_FILE, context);
-		
-
-	    
-	      // get an RSA cipher object and print the provider
+	      
 	      // BC will map it to non-padding	
 	      final Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
 	
 	      // decrypt the text using the private key
 	      cipher.init(Cipher.DECRYPT_MODE, key);
-	      dectyptedText = cipher.doFinal(text);
+	      plainText = cipher.doFinal(cipherText);
 	
-	      
 	    } catch (Exception e) {
 	      e.printStackTrace();
 	      return null;
 	    }
 
-    return Util.toHex(dectyptedText);
+		// return as hex/String
+    return Util.toHex(plainText);
   }
 
 

@@ -51,11 +51,20 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 	
 	public TaskType type;
 	
+	/**
+	 * Constants.
+	 */
 	private final int SSL_PORT = 443;
 	
 	private final String JSON_X1 = "x1";
+	
 	private final String JSON_IDKEY = "clientIdKey";
 	
+	/**
+	 * Type of Request: Register or Login.
+	 * @author Joerg Hilscher
+	 *
+	 */
 	public enum TaskType {
 		REGISTER, LOGIN
 	}
@@ -81,7 +90,10 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 	
 	/**
 	 * HTTPS POST request.
+	 * With JSON Post body.
+	 * 
 	 * @author Joerg Hilscher.
+	 * 
 	 * args[0]: URL
 	 * args[1]: JSON-Value 1
 	 * args[2]: JSON-Value 2
@@ -90,11 +102,12 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 	 */
     @Override
     protected Boolean doInBackground(String... args) {
-    	
-    	// SSL    	
+    	 	
     	Log.i("Task execution: ", "started");
     	
     	Boolean result = false;
+    	
+    	// build httpClient with SSL.
     	
     	SchemeRegistry schemeRegistry = new SchemeRegistry();
     	schemeRegistry.register(new Scheme("https", 
@@ -126,9 +139,6 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
         	// HTTP POST
         	HttpPost post = new HttpPost(args[0]);
         	
-        	// TODO: remove
-        	//Log.i("Json POST: ", json);
-        	
         	// set Header
         	post.addHeader("Accept", "application/json");
         	post.addHeader("Content-Type", "application/json");
@@ -137,6 +147,7 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
             // get response
         	response = httpclient.execute(post);
         	
+        	// get statuscode
             StatusLine statusLine = response.getStatusLine();
             
             Log.i("Statuscode", "Code: " + statusLine.getStatusCode());
@@ -144,6 +155,7 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
             // when 201 created OR 200 ok
             if(statusLine.getStatusCode() == HttpStatus.SC_CREATED
             		|| statusLine.getStatusCode() == HttpStatus.SC_OK){
+            	
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 response.getEntity().writeTo(out);
                 out.close();
@@ -152,8 +164,11 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
                 result = true;
                 
             } else{
-                //Closes the connection.
+            	
+                // Closes the connection.
                 response.getEntity().getContent().close();
+                
+                // Throw Exception because of bad statuscode.
                 throw new IllegalStateException("Statuscode not expected: " + statusLine.getReasonPhrase());
             }
         } catch (ClientProtocolException e) {
@@ -166,10 +181,15 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
         
         Log.i("Response: ", "string: " + responseString);
         
+        // will return false here
         return result;
         
     }
     
+    /**
+     * Triggered befor execution.
+     * Will show dialog, while executing.
+     */
     @Override
     protected void onPreExecute() {
     	super.onPreExecute();
@@ -187,6 +207,7 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 
     /**
      * Method executed after doInBackgound.
+     * Dismisses dialog, shows a toast with result, sets sharedPrefs.
      * @param result	if doInBackground was successful.
      */
     @Override

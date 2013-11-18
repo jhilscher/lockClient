@@ -1,6 +1,7 @@
 package com.tao.lockclient.activities;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.zxing.client.android.CaptureActivity;
 import com.tao.lockclient.R;
 import com.tao.lockclient.tasks.RestRequestTask;
 import com.tao.lockclient.utils.RSAUtil;
@@ -22,6 +24,8 @@ public class RegisterActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register);
 				
+		final Context context = this;
+		
 		// Click on the scan button  to register.
 		final Button scanButton = (Button) findViewById(R.id.scanToRegisterButton);
 		scanButton.setOnClickListener(new View.OnClickListener() {
@@ -30,12 +34,15 @@ public class RegisterActivity extends Activity {
 				
 				try {
 						// call scanner
-						Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+						Intent intent = new Intent(context, CaptureActivity.class);
 						intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
 						startActivityForResult(intent, 0);
+
 					} catch (Exception e) {
 						e.printStackTrace();
-						Toast.makeText(getApplicationContext(), "ERROR:" + e, 1).show();
+						
+						// show toast on error
+						Toast.makeText(getApplicationContext(), "ERROR: " + e, 1).show();
 					}
 				
 			}
@@ -43,8 +50,6 @@ public class RegisterActivity extends Activity {
 		
 	}
 
-	
-	
 	/**
 	 * Handles the result from the qr-code-scanner intend.
 	 * --> REGISTER
@@ -54,16 +59,16 @@ public class RegisterActivity extends Activity {
 		      if (resultCode == RESULT_OK) {
 		    	 
 		    	  // QR-Code Content 
-		         String contents = intent.getStringExtra("SCAN_RESULT");
-		         
+		         String id_A = intent.getStringExtra("SCAN_RESULT");
+		         		         
 		         // remove null values from response string 
-		         contents = contents.replaceAll("\u0000", "");
+		         id_A = id_A.replaceAll("\u0000", "");
 
-		         // decrypted text as hex-string
-		         String x1 = RSAUtil.generateKey(this);
+		         // generate keypair
+		         String publicKeyAsXML = RSAUtil.generateKey(this);
 		         
 		         // save to file
-		         Util.saveToFile(contents, Util.FILENAME_ID, this);
+		         Util.saveToFile(id_A, Util.FILENAME_ID, this);
 
 		         AsyncTask<String, String, Boolean> task = new RestRequestTask(this, 
 	        			RegisterActivity.this, 
@@ -73,10 +78,11 @@ public class RegisterActivity extends Activity {
 	        			RestRequestTask.TaskType.REGISTER);
 	        	
 		         task.execute("https://lockd059130trial.hanatrial.ondemand.com/lock/api/service/register",
-						contents,
-						x1);
+		        		 id_A,
+						 publicKeyAsXML);
 
-		         String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+		         // Currently not needed.
+		         // String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 		         		         
 		      } else if (resultCode == RESULT_CANCELED) {
 		         // Handle cancel

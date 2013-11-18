@@ -3,10 +3,9 @@ package com.tao.lockclient.activities;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +15,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
 
+import com.google.zxing.client.android.CaptureActivity;
 import com.tao.lockclient.R;
 import com.tao.lockclient.tasks.RestRequestTask;
 import com.tao.lockclient.utils.RSAUtil;
@@ -38,7 +38,6 @@ public class MainActivity extends Activity {
 	
 	private Button registerButton;
 	
-	
 	private String scanContents;
 	
 	private CheckBox checkBoxRegistered;
@@ -48,14 +47,18 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		final Context context = this;
+		
 		// Scan button for login
 		scanButton = (Button) findViewById(R.id.scanButton);
 		
+		// OnClickListener
 		scanButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				try {
-						Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+						//Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+						Intent intent = new Intent(context, CaptureActivity.class);
 						intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
 						startActivityForResult(intent, 0);
 					} catch (Exception e) {
@@ -141,7 +144,6 @@ public class MainActivity extends Activity {
 		        	 return false;
 		         }
 		        	 
-		         
 		         String alpha = contents.split("#")[0];
 		         String timestamp = contents.split("#")[1];
 		         
@@ -200,7 +202,9 @@ public class MainActivity extends Activity {
 		    	 
 		    	  // QR-Code Content 
 		         this.scanContents = intent.getStringExtra("SCAN_RESULT");
-		         String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+		         
+		         // not needed
+		         // String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 		         
 		         loginToServer();
 
@@ -208,7 +212,7 @@ public class MainActivity extends Activity {
 		    	  showMessage("Scan NOT successful!");
 		      }
 		   }
-		}
+	}
 
 	/**
 	 * Displays a short message as Toast.

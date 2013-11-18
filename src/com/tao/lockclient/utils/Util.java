@@ -64,7 +64,7 @@ public class Util {
 	}
 		
      /**
-      * Gets a stored privete key.
+      * Gets a stored private key.
       * @param filename	filename of the key.
       * @param context	Android context.
       * @return	The key.
@@ -74,7 +74,7 @@ public class Util {
  		
  		File file = context.getFileStreamPath(filename);
  		
- 		
+ 		// exit, if no key found
  		if(!file.exists()) {
  			return null;
  		}
@@ -83,10 +83,10 @@ public class Util {
  		try {
  			fis = context.openFileInput(filename);
  			
- 			 ObjectInputStream inputStream = null;
+ 			ObjectInputStream inputStream = null;
 
- 		     inputStream = new ObjectInputStream(fis);
- 		     final PrivateKey privateKey = (PrivateKey) inputStream.readObject();
+ 		    inputStream = new ObjectInputStream(fis);
+ 		    final PrivateKey privateKey = (PrivateKey) inputStream.readObject();
  			
  		    fis.close();
  		    
@@ -127,8 +127,6 @@ public class Util {
 			
 			InputStreamReader inputStreamReader = new InputStreamReader(fis);
 	
-			
-			
 		    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 		    
 		    StringBuilder sb = new StringBuilder();
@@ -151,9 +149,11 @@ public class Util {
 	}
 	
 	/**
+	 * 
 	 * After recommendations from android-developers
 	 * http://android-developers.blogspot.de/2013/02/using-cryptography-to-store-credentials.html
 	 */
+	@Deprecated
 	public static String generateKey() throws NoSuchAlgorithmException {
 
 		final int outputKeyLength = 256;
@@ -210,6 +210,7 @@ public class Util {
      * @param b
      * @return	xored byte array.
      */
+    @Deprecated
     public static byte[] xor(byte[] a, byte[] b)
     {
     	int length = Math.min(a.length, b.length);
