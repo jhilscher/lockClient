@@ -19,24 +19,6 @@
         android:layout_marginTop="64dp"
         android:text="@string/title_activity_start" />
 
-    <Button
-        android:id="@+id/registerButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:text="@string/register"
-        android:layout_margin="29dp" />
-
-    <Button
-        android:id="@+id/scanButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/registerButton"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="29dp"
-        android:text="@string/scan"
- />
-
     <CheckBox
         android:id="@+id/checkBoxRegistered"
         android:layout_width="wrap_content"
@@ -49,5 +31,16 @@
         android:focusableInTouchMode="false"
         android:text="@string/checkBoxNotRegistered"
         android:textColor="@color/red" />
+
+    <Button
+        android:id="@+id/scanButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/checkBoxRegistered"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="29dp"
+        android:layout_marginTop="140dp"
+        android:minHeight="80dip"
+        android:text="@string/scan" />
 
 </RelativeLayout>

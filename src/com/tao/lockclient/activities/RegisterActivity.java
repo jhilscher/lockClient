@@ -8,16 +8,26 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.client.android.CaptureActivity;
 import com.tao.lockclient.R;
 import com.tao.lockclient.tasks.RestRequestTask;
 import com.tao.lockclient.utils.RSAUtil;
+import com.tao.lockclient.utils.SharedPrefsUtil;
 import com.tao.lockclient.utils.Util;
 
+/**
+ * Register/Settings
+ * 
+ * @author Joerg Hilscher
+ *
+ */
 public class RegisterActivity extends Activity {
 
+	private Button scanButton;
+	private Button deleteButton;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -26,8 +36,9 @@ public class RegisterActivity extends Activity {
 				
 		final Context context = this;
 		
+
 		// Click on the scan button  to register.
-		final Button scanButton = (Button) findViewById(R.id.scanToRegisterButton);
+		scanButton = (Button) findViewById(R.id.scanToRegisterButton);
 		scanButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -48,8 +59,53 @@ public class RegisterActivity extends Activity {
 			}
 		});
 		
+		// Click on the scan button  to register.
+		deleteButton = (Button) findViewById(R.id.deleteKey);
+		deleteButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				
+				try {
+						// call scanner
+						Util.deleteKey(context);
+						SharedPrefsUtil.setSharedPrefs(Util.PREFS_KEY_REGISTERED, false, context);
+						setButtonState();
+
+					} catch (Exception e) {
+						e.printStackTrace();
+						Toast.makeText(getApplicationContext(), "ERROR: " + e, 1).show();
+					}
+				
+			}
+		});
+		
+		setButtonState();
 	}
 
+	/**
+	 * Checks for registration and enables/disables the buttons
+	 */
+	private void setButtonState () {
+		boolean appIsRegistered = SharedPrefsUtil.getFromSharedPrefs(Util.PREFS_KEY_REGISTERED, this);
+		
+		if (appIsRegistered) {
+			scanButton.setEnabled(false);
+			deleteButton.setEnabled(true);
+		} else { 
+			deleteButton.setEnabled(false);
+			scanButton.setEnabled(true);
+		}
+	}
+	
+	/**
+	 * onResume, sets the button state
+	 */
+	@Override
+	public void onResume() { 
+		super.onResume();
+		setButtonState();
+	}
+	
 	/**
 	 * Handles the result from the qr-code-scanner intend.
 	 * --> REGISTER

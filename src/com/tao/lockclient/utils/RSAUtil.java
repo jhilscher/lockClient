@@ -8,6 +8,7 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
@@ -30,7 +31,7 @@ public class RSAUtil {
   public static final String ALGORITHM = "RSA";
   public static final String PRIVATE_KEY_FILE = "private.key";
   public static final int KEY_SIZE = 2048; // Bits
-  
+  public static final String SEC_PROVIDER = "BC"; // for BouncyCastle
 
   /**
    * Generates RSA-Key-Pair.
@@ -43,7 +44,7 @@ public class RSAUtil {
 
     KeyPairGenerator keyGen;
 	try {
-		keyGen = KeyPairGenerator.getInstance(ALGORITHM);
+		keyGen = KeyPairGenerator.getInstance(ALGORITHM, SEC_PROVIDER);
 
 		// generate both keys
 		keyGen.initialize(KEY_SIZE);
@@ -97,6 +98,8 @@ public class RSAUtil {
 		e1.printStackTrace();
 	} catch (InvalidKeySpecException e) {
 		e.printStackTrace();
+	} catch (NoSuchProviderException e1) {
+		e1.printStackTrace();
 	}
 	return null;
   }
@@ -130,7 +133,7 @@ public class RSAUtil {
    * @param context Android Context
    * @return Hex encoded string. 
    */
-  public static String decrypt(byte[] cipherText, Context context) {
+  public static byte[] decrypt(byte[] cipherText, Context context) {
     
 		byte[] plainText = null;
 	  
@@ -139,8 +142,11 @@ public class RSAUtil {
 		  // get the private key from the key file
 		  PrivateKey key = Util.getKeyFromFile(PRIVATE_KEY_FILE, context);
 	      
+		  if (key == null)
+			  return null;
+		  
 	      // BC will map it to non-padding	
-	      final Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
+	      final Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", SEC_PROVIDER);
 	
 	      // decrypt the text using the private key
 	      cipher.init(Cipher.DECRYPT_MODE, key);
@@ -152,7 +158,7 @@ public class RSAUtil {
 	    }
 
 		// return as hex/String
-    return Util.toHex(plainText);
+    return plainText;
   }
 
 

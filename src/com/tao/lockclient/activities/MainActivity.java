@@ -2,6 +2,8 @@ package com.tao.lockclient.activities;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
+import java.util.Date;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -68,23 +71,23 @@ public class MainActivity extends Activity {
 			}
 		});
 		
-		// register button
-		registerButton = (Button) findViewById(R.id.registerButton);
-		
-		// OnClickListener
-		registerButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-						Intent registerIntent = new Intent(MainActivity.this, RegisterActivity.class);
-						MainActivity.this.startActivity(registerIntent);
-					}	
-			});			
-
-		// checkbox
+//		// register button
+//		registerButton = (Button) findViewById(R.id.registerButton);
+//		
+//		// OnClickListener
+//		registerButton.setOnClickListener(new View.OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//						Intent registerIntent = new Intent(MainActivity.this, RegisterActivity.class);
+//						MainActivity.this.startActivity(registerIntent);
+//					}	
+//			});			
+//
+//		// checkbox
 		checkBoxRegistered = (CheckBox) findViewById(R.id.checkBoxRegistered);
 		
 		
-		checkIfRegistered();
+		Boolean registered = checkIfRegistered();
 		
 	}
 	
@@ -101,7 +104,7 @@ public class MainActivity extends Activity {
 	/**
 	 * Checks if the app is registered and sets info.
 	 */
-	private void checkIfRegistered() {
+	private Boolean checkIfRegistered() {
 		boolean appIsRegistered = SharedPrefsUtil.getFromSharedPrefs(Util.PREFS_KEY_REGISTERED, this);
 		
 		// if registered, set color of button to green
@@ -109,10 +112,14 @@ public class MainActivity extends Activity {
 			checkBoxRegistered.setTextColor(getResources().getColor(R.color.green));
 			checkBoxRegistered.setChecked(true);
 			checkBoxRegistered.setText(getResources().getString(R.string.checkBoxRegistered));
+			scanButton.setEnabled(true);
+			return true;
 		} else {
 			checkBoxRegistered.setTextColor(getResources().getColor(R.color.red));
 			checkBoxRegistered.setChecked(false);
 			checkBoxRegistered.setText(getResources().getString(R.string.checkBoxNotRegistered));
+			scanButton.setEnabled(false);
+			return false;
 		}
 		
 	}
@@ -139,25 +146,50 @@ public class MainActivity extends Activity {
 		         
 		         Log.i("contents: ", contents);
 		         
-		         if(contents.split("#").length != 2) {
+		         
+		         byte[] plainTextBytes;
+		         
+		         try {
+			         // decrypt, to get one time token r1
+			        plainTextBytes = RSAUtil.decrypt(Util.fromHex(contents), this);
+		         
+		         } catch (Exception ex) {
+		        	 showMessage("Wrong Key!");
+		        	 return false;
+		         }
+		         
+		         if(plainTextBytes == null || plainTextBytes.length < 120) {
 		        	 showMessage("Wrong QR-Code!");
 		        	 return false;
 		         }
-		        	 
-		         String alpha = contents.split("#")[0];
-		         String timestamp = contents.split("#")[1];
 		         
-		         //String x1 = Util.readFromFile(Util.FILENAME_X1, this);
+		         // token, use hex-converter on this part of the plainTextBytes
+		         String token = Util.toHex(Arrays.copyOfRange(plainTextBytes, 0, plainTextBytes.length - 13));
+		         
+		         // to Unicode for timestamp
+		         String timestamp = new String(Arrays.copyOfRange(plainTextBytes, plainTextBytes.length - 13, plainTextBytes.length)); 
+
+		         // get ID from file
 		         String ID = Util.readFromFile(Util.FILENAME_ID, this);
 		         
-		         //Log.i("x1: ", x1);
-		         Log.i("alpha: ", alpha);
-		         Log.i("alpha-length: ", "" + alpha.length());
+		         Log.i("timestamp: ", timestamp);
 		         
-		         // decrypt, to get one time token r1
-		         String t1 = RSAUtil.decrypt(Util.fromHex(alpha), this);
-		         		         
-		         Log.i("t1: ", t1);
+		         Log.i("time: ", "" + new Date().getTime());
+		         
+		         Log.i("token: ", token);
+		         
+		         // verify timestamp
+		         try {
+		        	 if (Math.abs(new Date().getTime() - Long.parseLong(timestamp)) > 60*2*1000)   {
+		        		 showMessage("QR-Code is too old.");
+		        		 return false; // cancel if timedifference is over 2 mins
+		        	 }
+		        	 
+		         } catch (Exception e) {
+		        	 showMessage("QR-Code not valid!");
+		        	 return false;
+		         }
+
 		         
 		         byte[] ts = timestamp.getBytes();
 		         
@@ -166,7 +198,7 @@ public class MainActivity extends Activity {
 		        try {
 					
 		        	// hash the result, with the timestamp as salt
-		        	String r1 =  Util.pbkdf2(t1.toUpperCase().toCharArray(), timestamp.getBytes(), 1000, 64);
+		        	String r1 =  Util.pbkdf2(token.toUpperCase().toCharArray(), timestamp.getBytes(), 1000, 64);
 				
 		        	Log.i("r1: ", r1);
 		        	Log.i("timestamp: ", timestamp);
@@ -222,6 +254,21 @@ public class MainActivity extends Activity {
 		Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
 	}
 	
+	/**
+	 * On Click Menu Item
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+
+	    switch (item.getItemId()) {
+	        case R.id.action_settings: // Settings
+	        	Intent registerIntent = new Intent(MainActivity.this, RegisterActivity.class);
+				MainActivity.this.startActivity(registerIntent);
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+	}
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

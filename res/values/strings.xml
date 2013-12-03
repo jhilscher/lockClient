@@ -13,5 +13,6 @@
     <string name="welcome">Welcome to the lock app.</string>
     <string name="checkBoxNotRegistered">Lock App is not registered.</string>
 	<string name="checkBoxRegistered">Lock App is registered.</string>
-    
+    <string name="delete_key">Delete Key</string>
+    <string name="settings">Settings</string>
 </resources>

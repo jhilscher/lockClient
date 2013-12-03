@@ -103,6 +103,12 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
     @Override
     protected Boolean doInBackground(String... args) {
     	 	
+    	// if no internet
+    	if (!Util.isOnline(context)) {
+    		this.failMsg = "No internet-connection.";
+    		return false;
+    	}
+    	
     	Log.i("Task execution: ", "started");
     	
     	Boolean result = false;
@@ -117,6 +123,7 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
 
     	SingleClientConnManager mgr = new SingleClientConnManager(params, schemeRegistry);
 
+    	
     	HttpClient httpclient = new DefaultHttpClient(mgr, params);
     	
         HttpResponse response;
@@ -178,9 +185,7 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
         } catch (IllegalStateException e) {
         	Log.e("IOException", e.getMessage());
         }
-        
-        Log.i("Response: ", "string: " + responseString);
-        
+                
         // will return false here
         return result;
         
@@ -216,12 +221,13 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
         
         Log.i("RequestTask", "onPostExecute fired");
         
-        if (pdia == null)
-        	return;
+        if (pdia != null) {
+        	
+            // remove Loading-Dialog.
+            pdia.dismiss();
+        	
+        }
 
-        // remove Loading-Dialog.
-        pdia.dismiss();
-        
         if (result) {
         
 	        if (type == TaskType.LOGIN)

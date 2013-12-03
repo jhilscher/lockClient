@@ -20,6 +20,8 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 /**
@@ -37,6 +39,21 @@ public class Util {
 	public static final String PREFS_KEY_REGISTERED = "registered";
 	
 	public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
+	
+	/**
+	 * 
+	 * @param filename
+	 * @param context
+	 * @return
+	 */
+	public static boolean deleteKey(Context context) {
+		
+		File fileKey = new File(FILENAME_X1);
+		File fileID = new File(FILENAME_ID);
+		
+		return fileKey.delete() && fileID.delete();
+		
+	}
 	
 	/**
 	 * Saves a file to internal storage.
@@ -240,5 +257,21 @@ public class Util {
         PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, bytes * 8);
         SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
         return toHex(skf.generateSecret(spec).getEncoded());
+    }
+    
+    /**
+     * Check if an internet connection exists
+     * 
+     * @param context
+     * @return Bool
+     */
+    public static boolean isOnline(Context context) {
+        ConnectivityManager cm =
+            (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            return true;
+        }
+        return false;
     }
 }
