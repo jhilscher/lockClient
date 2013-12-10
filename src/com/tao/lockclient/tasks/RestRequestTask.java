@@ -146,9 +146,11 @@ public class RestRequestTask extends AsyncTask<String, String, Boolean>{
         	// HTTP POST
         	HttpPost post = new HttpPost(args[0]);
         	
-        	// set Header
+        	// set Headers
         	post.addHeader("Accept", "application/json");
         	post.addHeader("Content-Type", "application/json");
+        	post.addHeader("User-Agent", "Lock App");
+        	
             post.setEntity(se);
         	
             // get response

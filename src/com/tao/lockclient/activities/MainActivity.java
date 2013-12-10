@@ -30,7 +30,7 @@ import com.tao.lockclient.utils.Util;
  * @author Joerg Hilscher
  *
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity { 
 
 	/**
 	 * URL to the cloud-api method.
@@ -82,12 +82,12 @@ public class MainActivity extends Activity {
 //						MainActivity.this.startActivity(registerIntent);
 //					}	
 //			});			
-//
-//		// checkbox
+
+		
+		// checkbox
 		checkBoxRegistered = (CheckBox) findViewById(R.id.checkBoxRegistered);
 		
-		
-		Boolean registered = checkIfRegistered();
+		checkIfRegistered();
 		
 	}
 	
@@ -260,7 +260,7 @@ public class MainActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
-	    switch (item.getItemId()) {
+	    switch (item.getItemId()) { 
 	        case R.id.action_settings: // Settings
 	        	Intent registerIntent = new Intent(MainActivity.this, RegisterActivity.class);
 				MainActivity.this.startActivity(registerIntent);
