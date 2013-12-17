@@ -51,6 +51,11 @@ public class Util {
 		File fileKey = new File(FILENAME_X1);
 		File fileID = new File(FILENAME_ID);
 		
+		
+		// delete a key
+		KeyStore ks = KeyStore.getInstance();
+		boolean success = ks.delete("secretKey1");
+		
 		return fileKey.delete() && fileID.delete();
 		
 	}

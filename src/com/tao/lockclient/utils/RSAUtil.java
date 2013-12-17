@@ -12,11 +12,15 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
@@ -42,6 +46,20 @@ public class RSAUtil {
    */
   public static String generateKey(Context context) {
 
+	  // unlock keystore
+	  try {
+		  if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			  context.startActivity(new Intent("android.credentials.UNLOCK"));
+		  } else {
+			  context.startActivity(new Intent("com.android.credentials.UNLOCK"));
+		  }
+		} catch (ActivityNotFoundException e) {
+		    Log.e("No UNLOCK activity: " , e.getMessage());
+		}
+	  
+	  
+	  
+	  
     KeyPairGenerator keyGen;
 	try {
 		keyGen = KeyPairGenerator.getInstance(ALGORITHM, SEC_PROVIDER);
@@ -90,6 +108,15 @@ public class RSAUtil {
 		sb.append("<Modulus>" + Base64.encodeToString(modulus, Base64.NO_WRAP) + "</Modulus>");
 		sb.append("<Exponent>"  + Base64.encodeToString(exponent, Base64.NO_WRAP) +  "</Exponent>");
 		sb.append("</RSAKeyValue>");
+		
+		
+		// save in Keystore
+		KeyStore ks = KeyStore.getInstance();
+		ks.put(PRIVATE_KEY_FILE, key.getPrivate().getEncoded());
+		
+		
+		
+		
 		
 		// return as String
 		return sb.toString();
@@ -140,8 +167,12 @@ public class RSAUtil {
 		try {
     	
 		  // get the private key from the key file
-		  PrivateKey key = Util.getKeyFromFile(PRIVATE_KEY_FILE, context);
-	      
+		  //PrivateKey key = Util.getKeyFromFile(PRIVATE_KEY_FILE, context);
+		  KeyStore ks = KeyStore.getInstance();
+		  byte[] keyBytes = ks.get(PRIVATE_KEY_FILE);
+		  final PrivateKey key = (PrivateKey)KeyFactory.getInstance(ALGORITHM).generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+		  
+		  
 		  if (key == null)
 			  return null;
 		  
