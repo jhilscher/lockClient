@@ -4,7 +4,7 @@
     <string name="app_name_lock">Lock</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-    <string name="scan">Scan to Logon</string>
+    <string name="scan">Scan to Log on.</string>
     <string name="send">Send</string>
     <string name="title_activity_start">Lock: Overview</string>
     <string name="register">Register</string>

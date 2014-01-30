@@ -44,16 +44,6 @@
         android:layout_marginTop="22dp"
         android:text="@string/delete_key" />
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/deleteKey"
-        android:layout_centerHorizontal="true"
-        android:text="Jörg Hilscher 2013"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/grey" />
-
     <ImageView
         android:id="@+id/imageView1"
         android:layout_width="wrap_content"
